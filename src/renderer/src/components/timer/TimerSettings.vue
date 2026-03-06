@@ -1,5 +1,5 @@
 <template>
-  <BaseModal v-model="show" title="计时器设置">
+  <BaseModal v-model="show" :title="t('settings.title')">
     <div class="settings-form">
       <div class="field" v-for="item in fields" :key="item.key">
         <label>{{ item.label }}</label>
@@ -14,21 +14,21 @@
       </div>
 
       <div class="field">
-        <label>自动开始休息</label>
+        <label>{{ t('settings.autoStartBreak') }}</label>
         <label class="toggle">
           <input type="checkbox" v-model="form.autoStartBreak" />
           <span class="slider" />
         </label>
       </div>
       <div class="field">
-        <label>自动开始工作</label>
+        <label>{{ t('settings.autoStartWork') }}</label>
         <label class="toggle">
           <input type="checkbox" v-model="form.autoStartWork" />
           <span class="slider" />
         </label>
       </div>
       <div class="field">
-        <label>声音提醒</label>
+        <label>{{ t('settings.soundEnabled') }}</label>
         <label class="toggle">
           <input type="checkbox" v-model="form.soundEnabled" />
           <span class="slider" />
@@ -36,7 +36,7 @@
       </div>
 
       <!-- Mini window section -->
-      <div class="section-divider">小窗口</div>
+      <div class="section-divider">{{ t('settings.miniSection') }}</div>
       <div class="field" v-for="item in miniFields" :key="item.key">
         <label>{{ item.label }}</label>
         <div class="slider-row">
@@ -50,7 +50,7 @@
       </div>
 
       <!-- Hotkeys section -->
-      <div class="section-divider">快捷键</div>
+      <div class="section-divider">{{ t('settings.hotkeysSection') }}</div>
       <div class="field" v-for="hk in hotkeyFields" :key="hk.key">
         <label>{{ hk.label }}</label>
         <button
@@ -58,20 +58,34 @@
           :class="{ capturing: capturing === hk.key }"
           @click="startCapture(hk.key)"
         >
-          {{ capturing === hk.key ? '按下组合键 (Esc取消)…' : (form.hotkeys && form.hotkeys[hk.key]) || '未设置' }}
+          {{ capturing === hk.key ? t('settings.capturing') : (form.hotkeys && form.hotkeys[hk.key]) || t('settings.notSet') }}
         </button>
+      </div>
+      <!-- Language section -->
+      <div class="section-divider">{{ t('settings.language') }}</div>
+      <div class="field">
+        <label>{{ t('settings.language') }}</label>
+        <div class="lang-switch">
+          <button :class="{ active: locale === 'zh' }" @click="changeLanguage('zh')">&#x4E2D;&#x6587;</button>
+          <button :class="{ active: locale === 'en' }" @click="changeLanguage('en')">English</button>
+        </div>
       </div>
     </div>
   </BaseModal>
 </template>
 
 <script setup>
-import { ref, reactive, watch, nextTick } from 'vue'
+import { ref, reactive, watch, nextTick, computed } from 'vue'
 import BaseModal from '@renderer/components/common/BaseModal.vue'
 import { useTimerStore } from '@renderer/stores/timerStore.js'
+import { useI18nStore } from '@renderer/stores/i18nStore.js'
+import { storeToRefs } from 'pinia'
 
 const show = defineModel({ default: false })
 const timerStore = useTimerStore()
+const i18nStore = useI18nStore()
+const { t } = i18nStore
+const { locale } = storeToRefs(i18nStore)
 
 const form = reactive({
   workDuration: 25, shortBreakDuration: 5, longBreakDuration: 15, longBreakInterval: 4,
@@ -81,24 +95,24 @@ const form = reactive({
   hotkeys: { toggleTimer: 'Ctrl+Alt+Space', skipPhase: 'Ctrl+Alt+S' }
 })
 
-const fields = [
-  { key: 'workDuration', label: '工作时长', min: 0.5, max: 60, step: 0.5 },
-  { key: 'shortBreakDuration', label: '短休息时长', min: 0.5, max: 30, step: 0.5 },
-  { key: 'longBreakDuration', label: '长休息时长', min: 0.5, max: 60, step: 0.5 },
-  { key: 'longBreakInterval', label: '长休息间隔', min: 2, max: 8, step: 1 },
-  { key: 'circleSize', label: '圆盘大小', min: 180, max: 400, step: 10 },
-  { key: 'dailyGoal', label: '今日目标', min: 1, max: 20, step: 1 }
-]
+const fields = computed(() => [
+  { key: 'workDuration', label: t('settings.workDuration'), min: 0.5, max: 60, step: 0.5 },
+  { key: 'shortBreakDuration', label: t('settings.shortBreakDuration'), min: 0.5, max: 30, step: 0.5 },
+  { key: 'longBreakDuration', label: t('settings.longBreakDuration'), min: 0.5, max: 60, step: 0.5 },
+  { key: 'longBreakInterval', label: t('settings.longBreakInterval'), min: 2, max: 8, step: 1 },
+  { key: 'circleSize', label: t('settings.circleSize'), min: 180, max: 400, step: 10 },
+  { key: 'dailyGoal', label: t('settings.dailyGoal'), min: 1, max: 20, step: 1 }
+])
 
-const miniFields = [
-  { key: 'miniSize', label: '小窗口大小', min: 120, max: 400, step: 10 },
-  { key: 'miniOpacity', label: '小窗口透明度', min: 0.1, max: 1.0, step: 0.05 }
-]
+const miniFields = computed(() => [
+  { key: 'miniSize', label: t('settings.miniSize'), min: 120, max: 400, step: 10 },
+  { key: 'miniOpacity', label: t('settings.miniOpacity'), min: 0.1, max: 1.0, step: 0.05 }
+])
 
-const hotkeyFields = [
-  { key: 'toggleTimer', label: '播放/暂停' },
-  { key: 'skipPhase', label: '跳过阶段' }
-]
+const hotkeyFields = computed(() => [
+  { key: 'toggleTimer', label: t('settings.toggleTimer') },
+  { key: 'skipPhase', label: t('settings.skipPhase') }
+])
 
 const capturing = ref(null)
 let _saveReady = false
@@ -106,13 +120,13 @@ let _saveTimer = null
 
 function displayVal(item) {
   const v = form[item.key]
-  if (item.key === 'longBreakInterval') return `${v} 个番茄`
-  if (item.key === 'circleSize') return `${v} px`
-  if (item.key === 'dailyGoal') return `${v} 个番茄`
-  if (item.key === 'miniSize') return `${v} px`
-  if (item.key === 'miniOpacity') return `${Math.round(v * 100)} %`
-  if (v < 1) return `${Math.round(v * 60)} 秒`
-  return `${v} 分钟`
+  if (item.key === 'longBreakInterval') return t('settings.units.pomodoros', { n: v })
+  if (item.key === 'circleSize') return t('settings.units.px', { n: v })
+  if (item.key === 'dailyGoal') return t('settings.units.pomodoros', { n: v })
+  if (item.key === 'miniSize') return t('settings.units.px', { n: v })
+  if (item.key === 'miniOpacity') return t('settings.units.percent', { n: Math.round(v * 100) })
+  if (v < 1) return t('settings.units.seconds', { n: Math.round(v * 60) })
+  return t('settings.units.minutes', { n: v })
 }
 
 // Load saved settings when modal opens
@@ -200,6 +214,10 @@ function onCaptureKey(e) {
     form.hotkeys[key] = parts.join('+')
   }
 }
+
+function changeLanguage(lang) {
+  i18nStore.setLocale(lang)
+}
 </script>
 
 <style scoped>
@@ -275,4 +293,19 @@ input[type=range] {
 }
 .toggle input:checked + .slider { background: var(--color-work); border-color: var(--color-work); }
 .toggle input:checked + .slider::before { transform: translateX(20px); }
+
+/* Language switch */
+.lang-switch { display: flex; gap: 6px; }
+.lang-switch button {
+  padding: 5px 14px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.65);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.lang-switch button:hover { background: rgba(255,255,255,0.12); color: #fff; }
+.lang-switch button.active { background: rgba(167,139,250,0.25); border-color: var(--color-work); color: #fff; }
 </style>

@@ -1,14 +1,16 @@
 <template>
   <div class="chart-wrap glass rounded-2xl">
-    <div class="chart-title">每日番茄数</div>
+    <div class="chart-title">{{ t('stats.chartTitle') }}</div>
     <VChart v-if="option" :option="option" autoresize style="height: 220px;" />
-    <div v-else class="no-data">暂无数据</div>
+    <div v-else class="no-data">{{ t('stats.noData') }}</div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { useI18nStore } from '@renderer/stores/i18nStore.js'
 
+const { t } = useI18nStore()
 const props = defineProps({ data: { type: Object, default: null } })
 
 const option = computed(() => {

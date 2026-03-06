@@ -1,7 +1,7 @@
 <template>
   <div class="stats-view">
     <div class="stats-header">
-      <h2 class="page-title">统计</h2>
+      <h2 class="page-title">{{ t('stats.title') }}</h2>
       <div class="period-tabs">
         <button
           v-for="p in periods" :key="p.value"
@@ -12,7 +12,7 @@
       </div>
     </div>
 
-    <div v-if="store.loading" class="loading">加载中...</div>
+    <div v-if="store.loading" class="loading">{{ t('stats.loading') }}</div>
     <template v-else-if="store.data">
       <template v-if="store.data.totalPomodoros > 0">
         <StatsCards :data="store.data" />
@@ -20,7 +20,7 @@
       </template>
       <div v-else class="empty-stats">
         <div class="empty-icon">🍅</div>
-        <p class="empty-text">还没有记录，开始你的第一个番茄吧！</p>
+        <p class="empty-text">{{ t('stats.empty') }}</p>
       </div>
       <div class="glass rounded-2xl mt-3">
         <ExportButton />
@@ -30,18 +30,20 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, computed } from 'vue'
 import StatsCards from '@renderer/components/stats/StatsCards.vue'
 import StatsChart from '@renderer/components/stats/StatsChart.vue'
 import ExportButton from '@renderer/components/stats/ExportButton.vue'
 import { useStatsStore } from '@renderer/stores/statsStore.js'
+import { useI18nStore } from '@renderer/stores/i18nStore.js'
 
 const store = useStatsStore()
-const periods = [
-  { value: 'day', label: '今日' },
-  { value: 'week', label: '本周' },
-  { value: 'month', label: '本月' }
-]
+const { t } = useI18nStore()
+const periods = computed(() => [
+  { value: 'day', label: t('stats.today') },
+  { value: 'week', label: t('stats.week') },
+  { value: 'month', label: t('stats.month') }
+])
 
 onMounted(() => store.fetchStats('day'))
 </script>

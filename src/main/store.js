@@ -20,7 +20,8 @@ const DEFAULTS = {
     hotkeys: {
       toggleTimer: 'Ctrl+Alt+Space',
       skipPhase: 'Ctrl+Alt+S'
-    }
+    },
+    language: 'zh'
   },
   tasks: [],
   records: []

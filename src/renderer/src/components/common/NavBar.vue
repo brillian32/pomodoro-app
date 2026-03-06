@@ -1,23 +1,28 @@
 <template>
   <nav class="navbar glass">
-    <div class="brand">🍅 番茄时钟</div>
+    <div class="brand">{{ t('nav.brand') }}</div>
     <div class="tabs">
       <router-link to="/timer" class="tab" active-class="tab-active">
         <span class="tab-icon">⏱</span>
-        <span class="tab-label">计时</span>
+        <span class="tab-label">{{ t('nav.timer') }}</span>
       </router-link>
       <router-link to="/tasks" class="tab" active-class="tab-active">
         <span class="tab-icon">📋</span>
-        <span class="tab-label">任务</span>
+        <span class="tab-label">{{ t('nav.tasks') }}</span>
       </router-link>
       <router-link to="/stats" class="tab" active-class="tab-active">
         <span class="tab-icon">📊</span>
-        <span class="tab-label">统计</span>
+        <span class="tab-label">{{ t('nav.stats') }}</span>
       </router-link>
     </div>
     <div class="spacer" />
   </nav>
 </template>
+
+<script setup>
+import { useI18nStore } from '@renderer/stores/i18nStore.js'
+const { t } = useI18nStore()
+</script>
 
 <style scoped>
 .navbar {

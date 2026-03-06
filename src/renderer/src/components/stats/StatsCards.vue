@@ -10,17 +10,20 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18nStore } from '@renderer/stores/i18nStore.js'
+
+const { t } = useI18nStore()
 const props = defineProps({ data: { type: Object, default: null } })
 
 const cards = computed(() => {
   const d = props.data
   if (!d) return []
   return [
-    { icon: '🍅', value: d.totalPomodoros, label: '番茄数' },
-    { icon: '⏱', value: `${Math.floor(d.totalMinutes / 60)}h ${d.totalMinutes % 60}m`, label: '总时长' },
-    { icon: '✅', value: `${d.completedTasks}/${d.totalTasks}`, label: '任务完成' },
-    { icon: '📈', value: `${d.completionRate}%`, label: '完成率' },
-    { icon: '🔥', value: d.streak ?? 0, label: '连续天数' }
+    { icon: '🍅', value: d.totalPomodoros, label: t('stats.pomodoros') },
+    { icon: '⏱', value: `${Math.floor(d.totalMinutes / 60)}h ${d.totalMinutes % 60}m`, label: t('stats.duration') },
+    { icon: '✅', value: `${d.completedTasks}/${d.totalTasks}`, label: t('stats.tasksCompleted') },
+    { icon: '📈', value: `${d.completionRate}%`, label: t('stats.completionRate') },
+    { icon: '🔥', value: d.streak ?? 0, label: t('stats.streak') }
   ]
 })
 </script>

@@ -1,20 +1,20 @@
 <template>
-  <BaseModal :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" :title="editTask ? '编辑任务' : '新建任务'">
+  <BaseModal :model-value="modelValue" @update:model-value="$emit('update:modelValue', $event)" :title="editTask ? t('tasks.editTask') : t('tasks.newTask')">
     <form @submit.prevent="submit" class="task-form">
       <div class="field">
-        <label>任务名称</label>
+        <label>{{ t('tasks.nameLabel') }}</label>
         <input
           v-model="form.title"
           type="text"
           class="glass-input"
-          placeholder="输入任务内容..."
+          :placeholder="t('tasks.namePlaceholder')"
           maxlength="200"
           required
           autofocus
         />
       </div>
       <div class="field">
-        <label>预计番茄数</label>
+        <label>{{ t('tasks.pomodoroLabel') }}</label>
         <div class="tomato-picker">
           <button type="button" class="step-btn" @click="form.estimatedPomodoros = Math.max(1, form.estimatedPomodoros - 1)">−</button>
           <span class="tomato-count">{{ form.estimatedPomodoros }} 🍅</span>
@@ -22,7 +22,7 @@
         </div>
       </div>
       <div class="field">
-        <label>日期</label>
+        <label>{{ t('tasks.dateLabel') }}</label>
         <input
           v-model="form.date"
           type="date"
@@ -30,8 +30,8 @@
         />
       </div>
       <div class="actions">
-        <button type="button" class="btn-cancel" @click="$emit('update:modelValue', false)">取消</button>
-        <button type="submit" class="btn-submit">{{ editTask ? '保存' : '创建' }}</button>
+        <button type="button" class="btn-cancel" @click="$emit('update:modelValue', false)">{{ t('tasks.cancel') }}</button>
+        <button type="submit" class="btn-submit">{{ editTask ? t('tasks.save') : t('tasks.create') }}</button>
       </div>
     </form>
   </BaseModal>
@@ -40,6 +40,9 @@
 <script setup>
 import { reactive, watch } from 'vue'
 import BaseModal from '@renderer/components/common/BaseModal.vue'
+import { useI18nStore } from '@renderer/stores/i18nStore.js'
+
+const { t } = useI18nStore()
 
 const props = defineProps({
   modelValue: Boolean,

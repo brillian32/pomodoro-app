@@ -52,8 +52,8 @@ export const useTimerStore = defineStore('timer', () => {
   })
 
   const phaseLabel = computed(() => {
-    const labels = { work: '工作', short_break: '短休息', long_break: '长休息', idle: '就绪' }
-    return labels[phase.value] || '就绪'
+    // Returns the raw phase key; components translate via i18n
+    return phase.value || 'idle'
   })
 
   function syncState(data) {

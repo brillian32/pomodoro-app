@@ -14,14 +14,14 @@
         :stroke-width="Math.max(8, Math.round(store.circleSize * 0.04))"
         :paused="!store.isRunning && store.phase !== 'idle'"
       >
-        <div class="timer-display" @click="togglePlay" :title="store.isRunning ? '暂停' : '开始'">
-          <div class="phase-label" :style="{ color: store.phaseColor }">{{ store.phaseLabel }}</div>
+        <div class="timer-display" @click="togglePlay" :title="store.isRunning ? t('timer.pause') : t('timer.start')">
+          <div class="phase-label" :style="{ color: store.phaseColor }">{{ phaseLabel }}</div>
           <div class="time-text" :style="{ fontSize: Math.max(28, Math.round(store.circleSize * 0.2)) + 'px' }">{{ store.formattedTime }}</div>
           <div class="play-hint">
             <svg v-if="!store.isRunning" :width="Math.round(store.circleSize*0.1)" :height="Math.round(store.circleSize*0.1)" viewBox="0 0 24 24" fill="currentColor" class="hint-icon"><polygon points="5 3 19 12 5 21 5 3"/></svg>
             <svg v-else :width="Math.round(store.circleSize*0.1)" :height="Math.round(store.circleSize*0.1)" viewBox="0 0 24 24" fill="currentColor" class="hint-icon"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
           </div>
-          <div class="count-text" v-if="store.pomodoroCount > 0">第 {{ store.pomodoroCount }} 个番茄 🍅</div>
+          <div class="count-text" v-if="store.pomodoroCount > 0">{{ t('timer.pomodoroCount', { count: store.pomodoroCount }) }}</div>
         </div>
       </CircleProgress>
 
@@ -41,18 +41,18 @@
           />
         </div>
         <span class="daily-goal-text">
-          今日 {{ store.todayCount }}/{{ store.dailyGoal }} 🍅
-          <span v-if="store.todayCount >= store.dailyGoal" class="goal-achieved">✓ 完成！</span>
+          {{ t('timer.todayProgress', { today: store.todayCount, goal: store.dailyGoal }) }}
+          <span v-if="store.todayCount >= store.dailyGoal" class="goal-achieved">{{ t('timer.goalAchieved') }}</span>
         </span>
       </div>
 
       <!-- Settings button -->
-      <button class="settings-btn" @click="showSettings = true" title="设置">
+      <button class="settings-btn" @click="showSettings = true" :title="t('timer.settings')">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
           <path d="M12 2v2m0 16v2M2 12h2m16 0h2"/>
         </svg>
-        设置
+        {{ t('timer.settings') }}
       </button>
 
       <!-- Current task or quick task picker (UX-2) -->
@@ -63,19 +63,19 @@
       </div>
       <div v-else class="task-picker-row">
         <button class="task-picker-toggle" @click="showTaskPicker = !showTaskPicker">
-          + 关联任务
+          {{ t('timer.linkTask') }}
         </button>
         <Transition name="fade">
           <div v-if="showTaskPicker" class="task-picker-popup glass">
-            <div v-if="availableTasks.length === 0" class="picker-empty">暂无进行中的任务</div>
+            <div v-if="availableTasks.length === 0" class="picker-empty">{{ t('timer.noTasks') }}</div>
             <div
-              v-for="t in availableTasks"
-              :key="t.id"
+              v-for="task in availableTasks"
+              :key="task.id"
               class="picker-item"
-              @click="pickTask(t)"
+              @click="pickTask(task)"
             >
-              <span class="picker-title">{{ t.title }}</span>
-              <span class="picker-pomo">🍅{{ t.completedPomodoros }}/{{ t.estimatedPomodoros }}</span>
+              <span class="picker-title">{{ task.title }}</span>
+              <span class="picker-pomo">🍅{{ task.completedPomodoros }}/{{ task.estimatedPomodoros }}</span>
             </div>
           </div>
         </Transition>
@@ -95,12 +95,16 @@ import PomodoroCounter from '@renderer/components/timer/PomodoroCounter.vue'
 import TimerSettings from '@renderer/components/timer/TimerSettings.vue'
 import { useTimerStore } from '@renderer/stores/timerStore.js'
 import { useTasksStore } from '@renderer/stores/tasksStore.js'
+import { useI18nStore } from '@renderer/stores/i18nStore.js'
 
 const store = useTimerStore()
 const timerStore = store
 const tasksStore = useTasksStore()
+const { t } = useI18nStore()
 const showSettings = ref(false)
 const showTaskPicker = ref(false)
+
+const phaseLabel = computed(() => t('timer.phase.' + (store.phase || 'idle')))
 
 const currentTask = computed(() => store.currentTaskId
   ? tasksStore.tasks.find((t) => t.id === store.currentTaskId) : null)

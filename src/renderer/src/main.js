@@ -12,6 +12,7 @@ import TimerView from './views/TimerView.vue'
 import TasksView from './views/TasksView.vue'
 import StatsView from './views/StatsView.vue'
 import MiniView from './views/MiniView.vue'
+import { useI18nStore } from './stores/i18nStore.js'
 
 use([CanvasRenderer, BarChart, GridComponent, TooltipComponent, LegendComponent])
 
@@ -27,7 +28,9 @@ const router = createRouter({
 })
 
 const app = createApp(App)
-app.use(createPinia())
+const pinia = createPinia()
+app.use(pinia)
 app.use(router)
 app.component('VChart', ECharts)
+useI18nStore().init()
 app.mount('#app')

@@ -20,13 +20,13 @@
     </CircleProgress>
 
     <!-- Play/Pause overlay -->
-    <button class="mini-btn" @click.stop="togglePlay" :title="store.isRunning ? '暂停' : '开始'" :style="btnPlayStyle">
+    <button class="mini-btn" @click.stop="togglePlay" :title="store.isRunning ? t('timer.pause') : t('timer.start')" :style="btnPlayStyle">
       <svg v-if="!store.isRunning" :width="btnSvgSize" :height="btnSvgSize" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       <svg v-else :width="btnSvgSize" :height="btnSvgSize" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
     </button>
 
     <!-- Skip button -->
-    <button class="mini-btn" @click.stop="skip" title="跳过" :style="btnSkipStyle">
+    <button class="mini-btn" @click.stop="skip" :title="t('controls.skip')" :style="btnSkipStyle">
       <svg :width="btnSvgSize - 2" :height="btnSvgSize - 2" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="3" height="16"/></svg>
     </button>
   </div>
@@ -37,9 +37,11 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import CircleProgress from '@renderer/components/timer/CircleProgress.vue'
 import { useTimerStore } from '@renderer/stores/timerStore.js'
 import { useTasksStore } from '@renderer/stores/tasksStore.js'
+import { useI18nStore } from '@renderer/stores/i18nStore.js'
 
 const store = useTimerStore()
 const tasksStore = useTasksStore()
+const { t } = useI18nStore()
 
 // Reactive window size — drives all proportional sizing
 const winSize = ref(window.innerWidth || 180)
@@ -80,16 +82,15 @@ const btnSkipStyle = computed(() => ({
 }))
 
 const miniPhaseLabel = computed(() => {
-  const map = { work: '工作', short_break: '休息', long_break: '长休', idle: '就绪' }
-  return map[store.phase] || ''
+  return t('mini.phase.' + (store.phase || 'idle'))
 })
 
 const miniTaskName = computed(() => {
   if (!store.currentTaskId) return ''
-  const t = tasksStore.tasks.find((task) => task.id === store.currentTaskId)
-  if (!t) return ''
+  const task = tasksStore.tasks.find((item) => item.id === store.currentTaskId)
+  if (!task) return ''
   const maxChars = Math.max(4, Math.floor(winSize.value / 20))
-  return t.title.length > maxChars ? t.title.slice(0, maxChars) + '…' : t.title
+  return task.title.length > maxChars ? task.title.slice(0, maxChars) + '…' : task.title
 })
 
 // --- Drag with threshold (don't move on single click) ---

@@ -3,16 +3,16 @@
     <div class="tasks-header">
       <div class="title-area">
         <div class="title-accent"></div>
-        <h2 class="page-title">任务列表</h2>
+        <h2 class="page-title">{{ t('tasks.title') }}</h2>
       </div>
       <div class="header-actions">
-        <button class="export-btn" @click="exportMarkdown" title="导出为 Markdown 文件">
+        <button class="export-btn" @click="exportMarkdown" :title="t('tasks.exportTooltip')">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          导出
+          {{ t('tasks.export') }}
         </button>
         <button class="add-btn" @click="showForm = true">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          新建任务
+          {{ t('tasks.newTask') }}
         </button>
       </div>
     </div>
@@ -40,10 +40,15 @@ import TaskList from '@renderer/components/tasks/TaskList.vue'
 import TaskForm from '@renderer/components/tasks/TaskForm.vue'
 import { useTasksStore } from '@renderer/stores/tasksStore.js'
 import { useTimerStore } from '@renderer/stores/timerStore.js'
+import { useI18nStore } from '@renderer/stores/i18nStore.js'
+import { storeToRefs } from 'pinia'
 
 const store = useTasksStore()
 const timerStore = useTimerStore()
 const router = useRouter()
+const i18nStore = useI18nStore()
+const { t } = i18nStore
+const { locale } = storeToRefs(i18nStore)
 const showForm = ref(false)
 const editingTask = ref(null)
 
@@ -78,10 +83,11 @@ async function handleSave({ id, title, estimatedPomodoros, createdAt }) {
 function dateLabel(dateStr) {
   const today = new Date().toISOString().slice(0, 10)
   const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
-  if (dateStr === today) return '今天'
-  if (dateStr === yesterday) return '昨天'
-  const d = new Date(dateStr)
-  return `${d.getMonth() + 1}月${d.getDate()}日`
+  if (dateStr === today) return t('tasks.today')
+  if (dateStr === yesterday) return t('tasks.yesterday')
+  const d = new Date(dateStr + 'T12:00:00')
+  if (locale.value === 'zh') return `${d.getMonth() + 1}月${d.getDate()}日`
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 function exportMarkdown() {
@@ -94,10 +100,10 @@ function exportMarkdown() {
 
   const sorted = Object.entries(groups).sort(([a], [b]) => b.localeCompare(a))
 
-  let md = `# 任务列表\n\n> 导出时间：${new Date().toLocaleString('zh-CN')}\n\n`
+  let md = `${t('tasks.exportTitle')}\n\n> ${new Date().toLocaleString(locale.value === 'zh' ? 'zh-CN' : 'en-US')}\n\n`
   for (const [date, tasks] of sorted) {
     const completed = tasks.filter((t) => t.completed).length
-    md += `## ${dateLabel(date)} (${date})  ${completed}/${tasks.length} 完成\n\n`
+    md += `## ${dateLabel(date)} (${date})  ${completed}/${tasks.length} ${t('tasks.exportDone')}\n\n`
     for (const task of [...tasks].sort((a, b) => (a.createdAt || '').localeCompare(b.createdAt || ''))) {
       const check = task.completed ? 'x' : ' '
       const filled = '🍅'.repeat(task.completedPomodoros || 0)

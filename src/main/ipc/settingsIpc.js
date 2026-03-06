@@ -6,7 +6,7 @@ export function registerSettingsIpc(onSettingsApplied) {
 
   ipcMain.handle('settings:set', (_, updates) => {
     const current = readData('settings')
-    const allowed = ['workDuration', 'shortBreakDuration', 'longBreakDuration', 'longBreakInterval', 'autoStartBreak', 'autoStartWork', 'soundEnabled', 'circleSize', 'dailyGoal', 'miniSize', 'miniOpacity']
+    const allowed = ['workDuration', 'shortBreakDuration', 'longBreakDuration', 'longBreakInterval', 'autoStartBreak', 'autoStartWork', 'soundEnabled', 'circleSize', 'dailyGoal', 'miniSize', 'miniOpacity', 'language']
     const merged = { ...current }
     allowed.forEach((key) => {
       if (key in updates) merged[key] = updates[key]
@@ -20,6 +20,7 @@ export function registerSettingsIpc(onSettingsApplied) {
     if ('dailyGoal' in merged) merged.dailyGoal = Math.max(1, Math.min(20, Number(merged.dailyGoal)))
     if ('miniSize' in merged) merged.miniSize = Math.max(120, Math.min(400, Number(merged.miniSize)))
     if ('miniOpacity' in merged) merged.miniOpacity = Math.max(0.1, Math.min(1.0, Number(merged.miniOpacity)))
+    if ('language' in updates) merged.language = ['zh', 'en'].includes(String(updates.language)) ? String(updates.language) : 'zh'
     if ('hotkeys' in updates && updates.hotkeys && typeof updates.hotkeys === 'object') {
       merged.hotkeys = {
         toggleTimer: String(updates.hotkeys.toggleTimer || '').slice(0, 60),

@@ -1,6 +1,6 @@
 <template>
   <div class="export-row">
-    <span class="export-label">导出数据</span>
+    <span class="export-label">{{ t('stats.exportData') }}</span>
     <div class="btns">
       <button class="export-btn" @click="doExport('json')" :disabled="loading">JSON</button>
       <button class="export-btn" @click="doExport('csv')" :disabled="loading">CSV</button>
@@ -11,19 +11,21 @@
 <script setup>
 import { ref } from 'vue'
 import { useToastStore } from '@renderer/stores/toastStore.js'
+import { useI18nStore } from '@renderer/stores/i18nStore.js'
 
 const loading = ref(false)
 const toast = useToastStore()
+const { t } = useI18nStore()
 
 async function doExport(format) {
   loading.value = true
   try {
     const result = await window.electronAPI.exportStats(format)
-    if (result === true) toast.success('导出成功 ✓')
-    else if (result === null) toast.error('导出失败，请重试')
+    if (result === true) toast.success(t('stats.exportSuccess'))
+    else if (result === null) toast.error(t('stats.exportFail'))
     // false = user canceled dialog, no toast needed
   } catch {
-    toast.error('导出失败，请重试')
+    toast.error(t('stats.exportFail'))
   } finally {
     loading.value = false
   }
