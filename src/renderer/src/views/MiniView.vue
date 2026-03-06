@@ -113,6 +113,9 @@ function onMouseMove(e) {
     dragging = true
     window.electronAPI.startDrag()
   }
+  if (dragging) {
+    window.electronAPI.dragMove()
+  }
 }
 
 function onMouseUp() {

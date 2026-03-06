@@ -39,6 +39,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   showMain: () => ipcRenderer.send('window:showMain'),
   showMini: () => ipcRenderer.send('window:showMini'),
   startDrag: () => ipcRenderer.send('window:startDrag'),
+  dragMove: () => ipcRenderer.send('window:dragMove'),
   stopDrag: () => ipcRenderer.send('window:stopDrag'),
 
   // Mini window settings push

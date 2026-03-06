@@ -73,38 +73,35 @@ app.whenReady().then(() => {
     miniWindow.show()
   })
 
-  // IPC: mini window drag via cursor polling
+  // IPC: mini window drag — event-driven (no polling, no timer jitter)
+  // Captures cursor-to-window offset at drag start so the window never jumps.
+  let dragOffset = null   // { x, y, w } relative offset of cursor from window top-left
+
   ipcMain.on('window:startDrag', () => {
     miniDragging = true
-    let dragging = true
-    const dragStartTime = Date.now()
-    // Capture size ONCE to avoid growing caused by per-frame getSize() on transparent windows
+    if (miniWindow.isDestroyed()) return
+    const cursor = screen.getCursorScreenPoint()
+    const [wx, wy] = miniWindow.getPosition()
     const [initialW] = miniWindow.getSize()
-    const hw = Math.round(initialW / 2)
-    const dragInterval = setInterval(() => {
-      // Auto-stop after 30s to prevent interval leak if stopDrag is never received
-      if (!dragging || miniWindow.isDestroyed() || Date.now() - dragStartTime > 30000) {
-        clearInterval(dragInterval)
-        return
-      }
-      const cursor = screen.getCursorScreenPoint()
-      // Use setBounds to atomically set position + size, preventing Windows
-      // from drifting the transparent window size on every SetWindowPos call
-      miniWindow.setBounds({
-        x: Math.round(cursor.x - hw),
-        y: Math.round(cursor.y - hw),
-        width: initialW,
-        height: initialW
-      })
-    }, 16)
-    // Use on+manual cleanup instead of once to handle renderer reloads
-    const stopHandler = () => {
-      miniDragging = false
-      dragging = false
-      clearInterval(dragInterval)
-      ipcMain.removeListener('window:stopDrag', stopHandler)
-    }
-    ipcMain.on('window:stopDrag', stopHandler)
+    dragOffset = { x: cursor.x - wx, y: cursor.y - wy, w: initialW }
+  })
+
+  ipcMain.on('window:dragMove', () => {
+    if (!dragOffset || miniWindow.isDestroyed()) return
+    const cursor = screen.getCursorScreenPoint()
+    // Use setBounds (position + size atomically) to prevent Windows from
+    // drifting the transparent window size on each SetWindowPos call
+    miniWindow.setBounds({
+      x: Math.round(cursor.x - dragOffset.x),
+      y: Math.round(cursor.y - dragOffset.y),
+      width: dragOffset.w,
+      height: dragOffset.w
+    })
+  })
+
+  ipcMain.on('window:stopDrag', () => {
+    miniDragging = false
+    dragOffset = null
   })
 
   registerTimerIpc()
