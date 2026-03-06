@@ -9,8 +9,6 @@ export function createMiniWindow() {
   const settings = readData('settings')
   const savedSize = Math.max(120, Math.min(400, settings.miniSize || 180))
 
-  const savedOpacity = Math.max(0.1, Math.min(1.0, settings.miniOpacity ?? 0.92))
-
   miniWindow = new BrowserWindow({
     width: savedSize,
     height: savedSize,
@@ -33,7 +31,6 @@ export function createMiniWindow() {
 
   // Enforce square aspect ratio
   miniWindow.setAspectRatio(1)
-  miniWindow.setOpacity(savedOpacity)
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
     miniWindow.loadURL(process.env['ELECTRON_RENDERER_URL'] + '/#/mini')

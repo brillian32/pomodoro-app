@@ -1,7 +1,10 @@
 <template>
   <div class="tasks-view">
     <div class="tasks-header">
-      <h2 class="page-title">任务列表</h2>
+      <div class="title-area">
+        <div class="title-accent"></div>
+        <h2 class="page-title">任务列表</h2>
+      </div>
       <div class="header-actions">
         <button class="export-btn" @click="exportMarkdown" title="导出为 Markdown 文件">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -117,37 +120,75 @@ function exportMarkdown() {
 </script>
 
 <style scoped>
-.tasks-view { height: 100%; padding: 24px; overflow-y: auto; }
+.tasks-view { height: 100%; padding: 20px 24px; overflow-y: auto; }
+
 .tasks-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 14px 20px;
   margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
-.page-title { font-size: 20px; font-weight: 700; color: #fff; }
-.header-actions { display: flex; align-items: center; gap: 10px; }
+
+.title-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.title-accent {
+  width: 4px;
+  height: 22px;
+  background: linear-gradient(180deg, var(--color-work), rgba(167, 139, 250, 0.4));
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.page-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.3px;
+}
+
+.header-actions { display: flex; align-items: center; gap: 8px; }
 
 .export-btn {
-  display: flex; align-items: center; gap: 6px;
-  padding: 8px 14px; border-radius: 10px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 500; cursor: pointer;
-  transition: all 0.2s;
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 13px; border-radius: 10px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.6); font-size: 13px; font-weight: 500; cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 .export-btn:hover {
-  background: rgba(255,255,255,0.14);
-  border-color: rgba(255,255,255,0.25);
-  color: #fff;
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.22);
+  color: rgba(255,255,255,0.9);
 }
 
 .add-btn {
   display: flex; align-items: center; gap: 6px;
-  padding: 9px 18px; border-radius: 12px;
-  background: var(--color-work); border: none;
-  color: #fff; font-size: 14px; font-weight: 600; cursor: pointer;
-  transition: all 0.2s;
+  padding: 8px 16px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--color-work), #7c3aed);
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  color: #fff; font-size: 13px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 12px rgba(167, 139, 250, 0.25);
+  white-space: nowrap;
 }
-.add-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
-.tasks-container { max-width: 640px; }
+.add-btn:hover {
+  filter: brightness(1.12);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 18px rgba(167, 139, 250, 0.4);
+}
+.add-btn:active { transform: translateY(0); filter: brightness(0.97); }
+
+.tasks-container { max-width: 640px; margin: 0 auto; }
 </style>

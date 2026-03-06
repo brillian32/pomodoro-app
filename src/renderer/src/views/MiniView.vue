@@ -99,6 +99,9 @@ const DRAG_THRESHOLD = 5  // px
 
 function startDrag(e) {
   if (e.target.closest('.mini-btn')) return
+  // Lock native resize immediately on mousedown (before any movement threshold)
+  // to prevent Windows from resizing the transparent window before our drag begins.
+  window.electronAPI.dragLock()
   dragOrigin = { x: e.screenX, y: e.screenY }
   dragging = false
   document.addEventListener('mousemove', onMouseMove)
@@ -124,6 +127,9 @@ function onMouseUp() {
   if (dragging) {
     window.electronAPI.stopDrag()
     dragging = false
+  } else {
+    // No actual drag happened (just a click), but we still locked — unlock now.
+    window.electronAPI.stopDrag()
   }
   dragOrigin = null
 }
@@ -154,6 +160,8 @@ onMounted(() => {
   // Listen for real-time settings updates pushed from main process
   cleanupMiniSettings = window.electronAPI.onMiniSettingsUpdated((data) => {
     if (data.miniOpacity != null) miniOpacity.value = data.miniOpacity
+    // 同步小窗口内部布局尺寸（OS 窗口大小可能在隐藏状态下已被修改）
+    if (data.miniSize != null) winSize.value = data.miniSize
   })
 })
 

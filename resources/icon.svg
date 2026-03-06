@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Squircle background: coral #FF6B6B -->
+  <rect width="1024" height="1024" rx="240" ry="240" fill="#FF6B6B"/>
+  <!-- White circle -->
+  <circle cx="512" cy="512" r="385" fill="white"/>
+  <!-- Coral star (5-pointed, pointing up) -->
+  <polygon
+    points="512,240 578,428 782,428 621,545 682,735 512,618 342,735 403,545 242,428 446,428"
+    fill="#FF6B6B"/>
+</svg>

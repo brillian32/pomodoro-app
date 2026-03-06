@@ -164,17 +164,23 @@ async function save() {
 function startCapture(key) {
   capturing.value = key
   window.removeEventListener('keydown', onCaptureKey)
-  window.addEventListener('keydown', onCaptureKey)
+  window.addEventListener('keydown', onCaptureKey, true)  // useCapture 确保拦截
 }
 
 function cancelCapture() {
   capturing.value = null
-  window.removeEventListener('keydown', onCaptureKey)
+  window.removeEventListener('keydown', onCaptureKey, true)
 }
 
 function onCaptureKey(e) {
   e.preventDefault()
-  window.removeEventListener('keydown', onCaptureKey)
+  e.stopPropagation()
+
+  // 仅按下修饰键时保持等待，不终止捕获
+  if (['Control', 'Alt', 'Shift', 'Meta'].includes(e.key)) return
+
+  // 非修饰键：结束捕获
+  window.removeEventListener('keydown', onCaptureKey, true)
   const key = capturing.value
   capturing.value = null
 
@@ -187,11 +193,9 @@ function onCaptureKey(e) {
   if (e.metaKey) parts.push('Meta')
 
   const k = e.key
-  if (!['Control', 'Alt', 'Shift', 'Meta'].includes(k)) {
-    parts.push(k === ' ' ? 'Space' : k.length === 1 ? k.toUpperCase() : k)
-  }
+  parts.push(k === ' ' ? 'Space' : k.length === 1 ? k.toUpperCase() : k)
 
-  // Require at least one modifier — form.hotkeys change triggers the deep watcher
+  // 至少需要一个修饰键
   if (parts.length >= 2) {
     form.hotkeys[key] = parts.join('+')
   }

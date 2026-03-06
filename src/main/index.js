@@ -10,12 +10,18 @@ import { registerStatsIpc } from './ipc/statsIpc.js'
 import { registerSettingsIpc } from './ipc/settingsIpc.js'
 import { readData, writeData } from './store.js'
 
+// Chromium accelerator 不支持 "ArrowXxx"，需转换为 "Up/Down/Left/Right"
+function normalizeAccelerator(accel) {
+  if (!accel) return accel
+  return accel.replace(/Arrow(Up|Down|Left|Right)/g, '$1')
+}
+
 function applyHotkeys(hotkeys) {
   globalShortcut.unregisterAll()
   if (!hotkeys) return
   try {
     if (hotkeys.toggleTimer && hotkeys.toggleTimer.trim()) {
-      const ok = globalShortcut.register(hotkeys.toggleTimer, () => {
+      const ok = globalShortcut.register(normalizeAccelerator(hotkeys.toggleTimer), () => {
         const c = getTrayControls()
         if (c.isRunning) pauseTimer()
         else startTimer()
@@ -23,7 +29,7 @@ function applyHotkeys(hotkeys) {
       if (!ok) console.warn('[hotkey] Could not register:', hotkeys.toggleTimer)
     }
     if (hotkeys.skipPhase && hotkeys.skipPhase.trim()) {
-      const ok = globalShortcut.register(hotkeys.skipPhase, () => skipPhase())
+      const ok = globalShortcut.register(normalizeAccelerator(hotkeys.skipPhase), () => skipPhase())
       if (!ok) console.warn('[hotkey] Could not register:', hotkeys.skipPhase)
     }
   } catch (e) {
@@ -41,10 +47,11 @@ app.whenReady().then(() => {
   const mainWindow = createMainWindow()
   const miniWindow = createMiniWindow()
 
-  // Save mini window size on resize (guarded: not during IPC drag)
+  // Save mini window size on resize (guarded: not during IPC drag or programmatic resize)
   let miniDragging = false
+  let miniResizing = false
   miniWindow.on('resized', () => {
-    if (miniWindow.isDestroyed() || miniDragging) return
+    if (miniWindow.isDestroyed() || miniDragging || miniResizing) return
     const [w] = miniWindow.getSize()
     const s = readData('settings')
     writeData('settings', { ...s, miniSize: w })
@@ -77,9 +84,19 @@ app.whenReady().then(() => {
   // Captures cursor-to-window offset at drag start so the window never jumps.
   let dragOffset = null   // { x, y, w } relative offset of cursor from window top-left
 
-  ipcMain.on('window:startDrag', () => {
-    miniDragging = true
+  // dragLock is sent on mousedown (before any movement) to immediately disable
+  // native resize handles -- this prevents Windows from resizing the transparent
+  // window before our custom drag begins, which was the root cause of the
+  // intermittent "window suddenly becomes larger on drag" bug.
+  ipcMain.on('window:dragLock', () => {
     if (miniWindow.isDestroyed()) return
+    miniDragging = true
+    miniWindow.setResizable(false)
+  })
+
+  ipcMain.on('window:startDrag', () => {
+    if (miniWindow.isDestroyed()) return
+    miniDragging = true
     const cursor = screen.getCursorScreenPoint()
     const [wx, wy] = miniWindow.getPosition()
     const [initialW] = miniWindow.getSize()
@@ -102,6 +119,7 @@ app.whenReady().then(() => {
   ipcMain.on('window:stopDrag', () => {
     miniDragging = false
     dragOffset = null
+    if (!miniWindow.isDestroyed()) miniWindow.setResizable(true)
   })
 
   registerTimerIpc()
@@ -113,7 +131,9 @@ app.whenReady().then(() => {
     if (!miniWindow.isDestroyed()) {
       if ('miniSize' in merged) {
         const sz = Math.max(120, Math.min(400, merged.miniSize))
+        miniResizing = true
         miniWindow.setSize(sz, sz)
+        setTimeout(() => { miniResizing = false }, 500)
       }
       // Push opacity + size to mini renderer via IPC (setOpacity conflicts with
       // per-pixel alpha on transparent Windows windows)

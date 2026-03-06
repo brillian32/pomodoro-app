@@ -53,7 +53,10 @@
       </div>
 
       <div v-if="dayTasks.length === 0" class="empty">
-        <div class="empty-icon">{{ viewDateStr === todayStr ? '📋' : '🗓️' }}</div>
+        <div class="empty-icon">
+          <svg v-if="viewDateStr === todayStr" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><path d="M9 2h6a1 1 0 0 1 1 1v1H8V3a1 1 0 0 1 1-1z"/><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>
+          <svg v-else width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
         <p>{{ viewDateStr === todayStr ? '今天还没有任务，点击右上角新建' : '这天没有任务' }}</p>
       </div>
       <TransitionGroup v-else tag="div" class="flat-list" name="task-fade">
@@ -125,7 +128,10 @@
     <!-- ====== ALL TASKS VIEW ====== -->
     <template v-else>
       <div v-if="allGroupedTasks.length === 0" class="empty">
-        <div class="empty-icon">{{ filterTab === 'done' ? '🎉' : '📋' }}</div>
+        <div class="empty-icon">
+          <svg v-if="filterTab === 'done'" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <svg v-else width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><path d="M9 2h6a1 1 0 0 1 1 1v1H8V3a1 1 0 0 1 1-1z"/><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="9" y1="11" x2="15" y2="11"/><line x1="9" y1="15" x2="12" y2="15"/></svg>
+        </div>
         <p>{{ filterTab === 'done' ? '还没有完成的任务' : filterTab === 'active' ? '没有进行中的任务' : '还没有任务，点击右上角新建' }}</p>
       </div>
       <div v-else class="all-groups">
@@ -369,6 +375,15 @@ const allGroupedTasks = computed(() => {
     }))
 })
 
+watch(allGroupedTasks, (groups) => {
+  const yesterday = new Date(Date.now() - 86400000).toLocaleDateString('en-CA')
+  for (const group of groups) {
+    if (!(group.date in collapsed)) {
+      collapsed[group.date] = group.date !== todayStr.value && group.date !== yesterday
+    }
+  }
+}, { immediate: true })
+
 // ── Month view ──
 const viewYear = ref(new Date().getFullYear())
 const viewMonth = ref(new Date().getMonth())
@@ -451,7 +466,7 @@ async function handleDelete(id) {
 .task-list.is-selecting { padding-bottom: 58px; }
 
 .empty { text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.4); font-size: 14px; }
-.empty-icon { font-size: 36px; margin-bottom: 10px; }
+.empty-icon { margin-bottom: 12px; display: flex; justify-content: center; }
 
 /* ── Toolbar ── */
 .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
@@ -460,27 +475,27 @@ async function handleDelete(id) {
 
 .filter-tabs { display: flex; gap: 3px; }
 .filter-tab {
-  padding: 5px 12px; border-radius: 9px;
+  padding: 6px 14px; border-radius: 9px;
   border: 1px solid rgba(255,255,255,0.12); background: transparent;
-  color: rgba(255,255,255,0.45); font-size: 12px; cursor: pointer; transition: all 0.15s;
+  color: rgba(255,255,255,0.45); font-size: 13px; cursor: pointer; transition: all 0.15s;
 }
 .filter-tab.active { background: rgba(167,139,250,0.2); border-color: var(--color-work); color: #fff; font-weight: 600; }
 .filter-tab:hover:not(.active) { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.75); }
 
 .sort-toggle { display: flex; border: 1px solid rgba(255,255,255,0.12); border-radius: 9px; overflow: hidden; }
-.sort-btn { padding: 5px 9px; background: transparent; border: none; color: rgba(255,255,255,0.4); font-size: 11px; cursor: pointer; transition: all 0.15s; }
+.sort-btn { padding: 5px 10px; background: transparent; border: none; color: rgba(255,255,255,0.4); font-size: 12px; cursor: pointer; transition: all 0.15s; }
 .sort-btn.active { background: rgba(167,139,250,0.2); color: #fff; font-weight: 600; }
 .sort-btn:hover:not(.active) { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.7); }
 
 .view-switch { display: flex; border: 1px solid rgba(255,255,255,0.12); border-radius: 9px; overflow: hidden; }
-.view-btn { display: flex; align-items: center; gap: 3px; padding: 5px 9px; background: transparent; border: none; color: rgba(255,255,255,0.4); font-size: 11px; cursor: pointer; transition: all 0.15s; }
+.view-btn { display: flex; align-items: center; gap: 3px; padding: 5px 10px; background: transparent; border: none; color: rgba(255,255,255,0.4); font-size: 12px; cursor: pointer; transition: all 0.15s; }
 .view-btn.active { background: rgba(167,139,250,0.22); color: #fff; font-weight: 600; }
 .view-btn:hover:not(.active) { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.75); }
 
 .select-toggle-btn {
-  display: flex; align-items: center; gap: 4px; padding: 5px 10px; border-radius: 9px;
+  display: flex; align-items: center; gap: 4px; padding: 5px 11px; border-radius: 9px;
   border: 1px solid rgba(255,255,255,0.12); background: transparent;
-  color: rgba(255,255,255,0.5); font-size: 11px; cursor: pointer; transition: all 0.15s;
+  color: rgba(255,255,255,0.5); font-size: 12px; cursor: pointer; transition: all 0.15s;
 }
 .select-toggle-btn:hover { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.85); }
 .select-toggle-btn.active { background: rgba(167,139,250,0.22); border-color: var(--color-work); color: var(--color-work); }

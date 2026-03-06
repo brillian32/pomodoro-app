@@ -17,10 +17,13 @@
     <div class="task-body" @dblclick.stop="!selecting && $emit('start', task)" :title="selecting ? '' : '双击开始专注'">
       <div class="task-title">{{ task.title }}</div>
       <div class="task-meta">
-        <span class="tomatos">
-          <span v-for="i in task.estimatedPomodoros" :key="i" class="tomato-icon" :class="{ filled: i <= task.completedPomodoros }">🍅</span>
-          <span class="tomato-text">{{ task.completedPomodoros }}/{{ task.estimatedPomodoros }}</span>
-        </span>
+        <div class="pomo-row">
+          <span class="pomo-icon-sm">🍅</span>
+          <div class="pomo-bar">
+            <div class="pomo-fill" :style="{ width: task.estimatedPomodoros > 0 ? Math.min(100, (task.completedPomodoros / task.estimatedPomodoros) * 100) + '%' : '0%' }"></div>
+          </div>
+          <span class="pomo-text">{{ task.completedPomodoros }}/{{ task.estimatedPomodoros }}</span>
+        </div>
       </div>
     </div>
 
@@ -28,8 +31,12 @@
       <button v-if="!task.completed" class="action-btn start" @click.stop="$emit('start', task)" title="开始专注">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
       </button>
-      <button class="action-btn" @click.stop="$emit('edit', task)" title="编辑">✏️</button>
-      <button class="action-btn danger" @click.stop="$emit('delete', task.id)" title="删除">🗑</button>
+      <button class="action-btn" @click.stop="$emit('edit', task)" title="编辑">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      </button>
+      <button class="action-btn danger" @click.stop="$emit('delete', task.id)" title="删除">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      </button>
     </div>
   </div>
 </template>
@@ -72,7 +79,7 @@ function handleCheckClick() {
 .task-selected { background: rgba(167,139,250,0.18) !important; border-color: rgba(167,139,250,0.5) !important; }
 
 .check-btn {
-  width: 22px; height: 22px; border-radius: 50%;
+  width: 28px; height: 28px; border-radius: 50%;
   border: 2px solid rgba(255,255,255,0.3);
   background: transparent; cursor: pointer; color: #fff;
   display: flex; align-items: center; justify-content: center;
@@ -86,16 +93,18 @@ function handleCheckClick() {
 .task-body { flex: 1; min-width: 0; }
 .task-title { font-size: 14px; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .task-meta { margin-top: 4px; display: flex; align-items: center; gap: 8px; }
-.tomatos { display: flex; align-items: center; gap: 2px; }
-.tomato-icon { font-size: 11px; filter: grayscale(1); opacity: 0.4; }
-.tomato-icon.filled { filter: none; opacity: 1; }
-.tomato-text { font-size: 11px; color: rgba(255,255,255,0.5); margin-left: 4px; }
+.pomo-row { display: flex; align-items: center; gap: 5px; }
+.pomo-icon-sm { font-size: 10px; line-height: 1; }
+.pomo-bar { width: 44px; height: 3px; background: rgba(255,255,255,0.12); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.pomo-fill { height: 100%; background: var(--color-work); border-radius: 2px; transition: width 0.35s ease; }
+.pomo-text { font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1; }
 
 .task-actions { display: flex; gap: 4px; opacity: 0; transition: opacity 0.18s; flex-shrink: 0; }
 .task-item:hover .task-actions { opacity: 1; }
 .action-btn {
   background: none; border: none; cursor: pointer;
-  font-size: 14px; padding: 4px; border-radius: 6px; transition: background 0.18s;
+  font-size: 14px; padding: 6px; border-radius: 6px; transition: background 0.18s;
+  color: rgba(255,255,255,0.55); display: flex; align-items: center; justify-content: center;
 }
 .action-btn:hover { background: rgba(255,255,255,0.1); }
 .action-btn.danger:hover { background: rgba(239,68,68,0.2); }
