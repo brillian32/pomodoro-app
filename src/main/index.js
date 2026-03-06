@@ -88,7 +88,14 @@ app.whenReady().then(() => {
         return
       }
       const cursor = screen.getCursorScreenPoint()
-      miniWindow.setPosition(Math.round(cursor.x - hw), Math.round(cursor.y - hw))
+      // Use setBounds to atomically set position + size, preventing Windows
+      // from drifting the transparent window size on every SetWindowPos call
+      miniWindow.setBounds({
+        x: Math.round(cursor.x - hw),
+        y: Math.round(cursor.y - hw),
+        width: initialW,
+        height: initialW
+      })
     }, 16)
     // Use on+manual cleanup instead of once to handle renderer reloads
     const stopHandler = () => {
