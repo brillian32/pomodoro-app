@@ -197,7 +197,25 @@ function getTrayControls() {
   }
 }
 
-export { startTimer, pauseTimer, resetTimer, skipPhase, getTrayControls }
+/**
+ * Called after settings are persisted. If the timer is idle or at the very
+ * beginning of a phase (not yet started / remaining == totalSeconds), reset
+ * the current-phase duration to the newly saved values and broadcast so the
+ * renderer reflects the change immediately.
+ */
+function onSettingsChanged() {
+  const phaseDuration = state.phase === 'idle'
+    ? getPhaseDuration('work')
+    : getPhaseDuration(state.phase)
+
+  if (!state.isRunning && (state.phase === 'idle' || state.remaining === state.totalSeconds)) {
+    state.totalSeconds = phaseDuration
+    state.remaining = phaseDuration
+  }
+  broadcastTick()
+}
+
+export { startTimer, pauseTimer, resetTimer, skipPhase, getTrayControls, onSettingsChanged }
 
 export function registerTimerIpc() {
   ipcMain.handle('timer:getState', () => {

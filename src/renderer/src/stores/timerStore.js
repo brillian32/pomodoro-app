@@ -98,6 +98,7 @@ export const useTimerStore = defineStore('timer', () => {
     _soundEnabled = s.soundEnabled !== false
     if (s.circleSize) circleSize.value = s.circleSize
     if (s.dailyGoal) dailyGoal.value = s.dailyGoal
+    if (s.longBreakInterval) longBreakInterval.value = s.longBreakInterval
   }
 
   const start = () => window.electronAPI.startTimer()

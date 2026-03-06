@@ -8,8 +8,6 @@
             type="range"
             :min="item.min" :max="item.max" :step="item.step"
             v-model.number="form[item.key]"
-            @input="onSliderInput(item.key)"
-            @change="save"
           />
           <span class="val">{{ displayVal(item) }}</span>
         </div>
@@ -18,21 +16,21 @@
       <div class="field">
         <label>自动开始休息</label>
         <label class="toggle">
-          <input type="checkbox" v-model="form.autoStartBreak" @change="save" />
+          <input type="checkbox" v-model="form.autoStartBreak" />
           <span class="slider" />
         </label>
       </div>
       <div class="field">
         <label>自动开始工作</label>
         <label class="toggle">
-          <input type="checkbox" v-model="form.autoStartWork" @change="save" />
+          <input type="checkbox" v-model="form.autoStartWork" />
           <span class="slider" />
         </label>
       </div>
       <div class="field">
         <label>声音提醒</label>
         <label class="toggle">
-          <input type="checkbox" v-model="form.soundEnabled" @change="save" />
+          <input type="checkbox" v-model="form.soundEnabled" />
           <span class="slider" />
         </label>
       </div>
@@ -46,7 +44,6 @@
             type="range"
             :min="item.min" :max="item.max" :step="item.step"
             v-model.number="form[item.key]"
-            @change="save"
           />
           <span class="val">{{ displayVal(item) }}</span>
         </div>
@@ -69,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, nextTick } from 'vue'
 import BaseModal from '@renderer/components/common/BaseModal.vue'
 import { useTimerStore } from '@renderer/stores/timerStore.js'
 
@@ -104,6 +101,8 @@ const hotkeyFields = [
 ]
 
 const capturing = ref(null)
+let _saveReady = false
+let _saveTimer = null
 
 function displayVal(item) {
   const v = form[item.key]
@@ -116,27 +115,49 @@ function displayVal(item) {
   return `${v} 分钟`
 }
 
+// Load saved settings when modal opens
 watch(show, async (v) => {
   if (v) {
+    _saveReady = false
     const s = await window.electronAPI.getSettings()
     Object.assign(form, s)
     if (!form.hotkeys) form.hotkeys = { toggleTimer: 'Ctrl+Alt+Space', skipPhase: 'Ctrl+Alt+S' }
     timerStore.circleSize = s.circleSize || 280
     if (s.dailyGoal) timerStore.dailyGoal = s.dailyGoal
+    await nextTick()
+    _saveReady = true
   } else {
-    // Clean up any pending capture when modal closes
+    _saveReady = false
+    clearTimeout(_saveTimer)
     cancelCapture()
   }
 })
 
-function onSliderInput(key) {
-  if (key === 'circleSize') timerStore.circleSize = form.circleSize
-  if (key === 'dailyGoal') timerStore.dailyGoal = form.dailyGoal
-}
+// Deep watch on form — saves on ANY change (slider, checkbox, hotkey),
+// debounced to 200ms to batch rapid slider drags.
+// Uses JSON.stringify to observe deep changes and to strip Vue Proxy wrappers.
+watch(
+  () => JSON.stringify(form),
+  () => {
+    if (!_saveReady) return
+    // Live preview for visual settings
+    timerStore.circleSize = form.circleSize
+    timerStore.dailyGoal = form.dailyGoal
+    // Debounced save
+    clearTimeout(_saveTimer)
+    _saveTimer = setTimeout(save, 200)
+  }
+)
 
 async function save() {
-  const result = await window.electronAPI.setSettings({ ...form })
-  timerStore.applySettings(result)
+  try {
+    // JSON round-trip strips Vue reactive Proxy wrappers for clean IPC
+    const payload = JSON.parse(JSON.stringify(form))
+    const result = await window.electronAPI.setSettings(payload)
+    timerStore.applySettings(result)
+  } catch (e) {
+    console.error('[Settings] save failed:', e)
+  }
 }
 
 // --- Hotkey capture ---
@@ -170,10 +191,9 @@ function onCaptureKey(e) {
     parts.push(k === ' ' ? 'Space' : k.length === 1 ? k.toUpperCase() : k)
   }
 
-  // Require at least one modifier
+  // Require at least one modifier — form.hotkeys change triggers the deep watcher
   if (parts.length >= 2) {
     form.hotkeys[key] = parts.join('+')
-    save()
   }
 }
 </script>

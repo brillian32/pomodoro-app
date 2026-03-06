@@ -4,7 +4,7 @@ import { join } from 'path'
 import { createMainWindow } from './windows/mainWindow.js'
 import { createMiniWindow } from './windows/miniWindow.js'
 import { createTray } from './tray.js'
-import { registerTimerIpc, getTrayControls, startTimer, pauseTimer, skipPhase } from './ipc/timerIpc.js'
+import { registerTimerIpc, getTrayControls, startTimer, pauseTimer, skipPhase, onSettingsChanged } from './ipc/timerIpc.js'
 import { registerTasksIpc } from './ipc/tasksIpc.js'
 import { registerStatsIpc } from './ipc/statsIpc.js'
 import { registerSettingsIpc } from './ipc/settingsIpc.js'
@@ -112,6 +112,7 @@ app.whenReady().then(() => {
   registerStatsIpc()
   registerSettingsIpc((merged) => {
     if (merged.hotkeys) applyHotkeys(merged.hotkeys)
+    onSettingsChanged()
     if (!miniWindow.isDestroyed()) {
       if ('miniSize' in merged) {
         const sz = Math.max(120, Math.min(400, merged.miniSize))
