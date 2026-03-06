@@ -1,0 +1,142 @@
+import { app, ipcMain, screen, globalShortcut } from 'electron'
+import { electronApp, optimizer } from '@electron-toolkit/utils'
+import { join } from 'path'
+import { createMainWindow } from './windows/mainWindow.js'
+import { createMiniWindow } from './windows/miniWindow.js'
+import { createTray } from './tray.js'
+import { registerTimerIpc, getTrayControls, startTimer, pauseTimer, skipPhase } from './ipc/timerIpc.js'
+import { registerTasksIpc } from './ipc/tasksIpc.js'
+import { registerStatsIpc } from './ipc/statsIpc.js'
+import { registerSettingsIpc } from './ipc/settingsIpc.js'
+import { readData, writeData } from './store.js'
+
+function applyHotkeys(hotkeys) {
+  globalShortcut.unregisterAll()
+  if (!hotkeys) return
+  try {
+    if (hotkeys.toggleTimer && hotkeys.toggleTimer.trim()) {
+      const ok = globalShortcut.register(hotkeys.toggleTimer, () => {
+        const c = getTrayControls()
+        if (c.isRunning) pauseTimer()
+        else startTimer()
+      })
+      if (!ok) console.warn('[hotkey] Could not register:', hotkeys.toggleTimer)
+    }
+    if (hotkeys.skipPhase && hotkeys.skipPhase.trim()) {
+      const ok = globalShortcut.register(hotkeys.skipPhase, () => skipPhase())
+      if (!ok) console.warn('[hotkey] Could not register:', hotkeys.skipPhase)
+    }
+  } catch (e) {
+    console.error('[hotkey] Registration error:', e)
+  }
+}
+
+app.whenReady().then(() => {
+  electronApp.setAppUserModelId('com.pomodoro.app')
+
+  app.on('browser-window-created', (_, window) => {
+    optimizer.watchWindowShortcuts(window)
+  })
+
+  const mainWindow = createMainWindow()
+  const miniWindow = createMiniWindow()
+
+  // Save mini window size on resize (guarded: not during IPC drag)
+  let miniDragging = false
+  miniWindow.on('resized', () => {
+    if (miniWindow.isDestroyed() || miniDragging) return
+    const [w] = miniWindow.getSize()
+    const s = readData('settings')
+    writeData('settings', { ...s, miniSize: w })
+  })
+
+  // Window switch: minimize → show mini
+  mainWindow.on('minimize', (e) => {
+    e.preventDefault()
+    mainWindow.hide()
+    miniWindow.show()
+  })
+
+  mainWindow.on('close', () => {
+    app.quit()
+  })
+
+  // IPC: window controls
+  ipcMain.on('window:showMain', () => {
+    miniWindow.hide()
+    mainWindow.show()
+    mainWindow.focus()
+  })
+
+  ipcMain.on('window:showMini', () => {
+    mainWindow.hide()
+    miniWindow.show()
+  })
+
+  // IPC: mini window drag via cursor polling
+  ipcMain.on('window:startDrag', () => {
+    miniDragging = true
+    let dragging = true
+    const dragStartTime = Date.now()
+    // Capture size ONCE to avoid growing caused by per-frame getSize() on transparent windows
+    const [initialW] = miniWindow.getSize()
+    const hw = Math.round(initialW / 2)
+    const dragInterval = setInterval(() => {
+      // Auto-stop after 30s to prevent interval leak if stopDrag is never received
+      if (!dragging || miniWindow.isDestroyed() || Date.now() - dragStartTime > 30000) {
+        clearInterval(dragInterval)
+        return
+      }
+      const cursor = screen.getCursorScreenPoint()
+      miniWindow.setPosition(Math.round(cursor.x - hw), Math.round(cursor.y - hw))
+    }, 16)
+    // Use on+manual cleanup instead of once to handle renderer reloads
+    const stopHandler = () => {
+      miniDragging = false
+      dragging = false
+      clearInterval(dragInterval)
+      ipcMain.removeListener('window:stopDrag', stopHandler)
+    }
+    ipcMain.on('window:stopDrag', stopHandler)
+  })
+
+  registerTimerIpc()
+  registerTasksIpc()
+  registerStatsIpc()
+  registerSettingsIpc((merged) => {
+    if (merged.hotkeys) applyHotkeys(merged.hotkeys)
+    if (!miniWindow.isDestroyed()) {
+      if ('miniSize' in merged) {
+        const sz = Math.max(120, Math.min(400, merged.miniSize))
+        miniWindow.setSize(sz, sz)
+      }
+      // Push opacity + size to mini renderer via IPC (setOpacity conflicts with
+      // per-pixel alpha on transparent Windows windows)
+      miniWindow.webContents.send('mini:settingsUpdated', {
+        miniOpacity: merged.miniOpacity,
+        miniSize: merged.miniSize
+      })
+    }
+  })
+
+  // Apply initial global hotkeys from saved settings
+  const initSettings = readData('settings')
+  applyHotkeys(initSettings.hotkeys)
+
+  const iconPath = join(__dirname, '../../resources/icon.png')
+  createTray(iconPath, { ...getTrayControls(), quit: () => app.quit() })
+
+  app.on('activate', () => {
+    mainWindow.show()
+  })
+})
+
+app.on('will-quit', () => {
+  globalShortcut.unregisterAll()
+})
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
+    app.quit()
+  }
+})
