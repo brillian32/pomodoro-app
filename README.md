@@ -20,13 +20,28 @@
 
 ### 📸 Screenshots
 
-| Timer | Task Calendar | Statistics |
-|-------|--------------|------------|
-| ![Timer View](docs/screenshots/timer.png) | ![Task Calendar](docs/screenshots/tasks-calendar.png) | ![Stats](docs/screenshots/stats.png) |
-
-| Task List | Settings | Mini Window |
-|-----------|----------|-------------|
-| ![Task List](docs/screenshots/tasks-list.png) | ![Settings](docs/screenshots/settings.png) | ![Mini Window](docs/screenshots/mini.png) |
+<table>
+  <tr>
+    <td align="center"><b>Timer</b></td>
+    <td align="center"><b>Task Calendar</b></td>
+    <td align="center"><b>Statistics</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/timer.png" width="280" alt="Timer View"/></td>
+    <td><img src="docs/screenshots/tasks-calendar.png" width="280" alt="Task Calendar"/></td>
+    <td><img src="docs/screenshots/stats.png" width="280" alt="Statistics"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>Task List</b></td>
+    <td align="center"><b>Settings</b></td>
+    <td align="center"><b>Mini Window</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/tasks-list.png" width="280" alt="Task List"/></td>
+    <td><img src="docs/screenshots/settings.png" width="280" alt="Settings"/></td>
+    <td align="center"><img src="docs/screenshots/mini.png" width="160" alt="Mini Window"/></td>
+  </tr>
+</table>
 
 ### ✨ Features
 
@@ -166,13 +181,28 @@ This project follows [Semantic Versioning](https://semver.org/):
 
 ### 📸 应用截图
 
-| 计时器 | 任务日历 | 数据统计 |
-|--------|---------|---------|
-| ![计时器](docs/screenshots/timer.png) | ![任务日历](docs/screenshots/tasks-calendar.png) | ![统计](docs/screenshots/stats.png) |
-
-| 任务列表 | 设置面板 | 迷你窗口 |
-|---------|---------|---------|
-| ![任务列表](docs/screenshots/tasks-list.png) | ![设置](docs/screenshots/settings.png) | ![迷你窗口](docs/screenshots/mini.png) |
+<table>
+  <tr>
+    <td align="center"><b>计时器</b></td>
+    <td align="center"><b>任务日历</b></td>
+    <td align="center"><b>数据统计</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/timer.png" width="280" alt="计时器"/></td>
+    <td><img src="docs/screenshots/tasks-calendar.png" width="280" alt="任务日历"/></td>
+    <td><img src="docs/screenshots/stats.png" width="280" alt="数据统计"/></td>
+  </tr>
+  <tr>
+    <td align="center"><b>任务列表</b></td>
+    <td align="center"><b>设置面板</b></td>
+    <td align="center"><b>迷你窗口</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/tasks-list.png" width="280" alt="任务列表"/></td>
+    <td><img src="docs/screenshots/settings.png" width="280" alt="设置面板"/></td>
+    <td align="center"><img src="docs/screenshots/mini.png" width="160" alt="迷你窗口"/></td>
+  </tr>
+</table>
 
 ### ✨ 功能详解
 
