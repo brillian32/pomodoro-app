@@ -44,6 +44,7 @@ export default {
     skipPhase: '跳过阶段',
     capturing: '按下组合键 (Esc取消)…',
     notSet: '未设置',
+    openAtLogin: '开机自启',
     language: '语言',
     units: {
       pomodoros: '{n} 个番茄',

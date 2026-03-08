@@ -34,6 +34,13 @@
           <span class="slider" />
         </label>
       </div>
+      <div class="field">
+        <label>{{ t('settings.openAtLogin') }}</label>
+        <label class="toggle">
+          <input type="checkbox" v-model="form.openAtLogin" />
+          <span class="slider" />
+        </label>
+      </div>
 
       <!-- Mini window section -->
       <div class="section-divider">{{ t('settings.miniSection') }}</div>
@@ -92,7 +99,8 @@ const form = reactive({
   autoStartBreak: false, autoStartWork: false, soundEnabled: true,
   circleSize: 280, dailyGoal: 8,
   miniSize: 180, miniOpacity: 0.92,
-  hotkeys: { toggleTimer: 'Ctrl+Alt+Space', skipPhase: 'Ctrl+Alt+S' }
+  hotkeys: { toggleTimer: 'Ctrl+Alt+Space', skipPhase: 'Ctrl+Alt+S' },
+  openAtLogin: false
 })
 
 const fields = computed(() => [

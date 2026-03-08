@@ -44,6 +44,7 @@ export default {
     skipPhase: 'Skip Phase',
     capturing: 'Press shortcut (Esc to cancel)…',
     notSet: 'Not set',
+    openAtLogin: 'Launch at Login',
     language: 'Language',
     units: {
       pomodoros: '{n} pomodoros',

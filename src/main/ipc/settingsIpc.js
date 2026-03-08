@@ -1,12 +1,19 @@
-import { ipcMain } from 'electron'
+import { ipcMain, app } from 'electron'
 import { readData, writeData } from '../store.js'
 
 export function registerSettingsIpc(onSettingsApplied) {
-  ipcMain.handle('settings:get', () => readData('settings'))
+  ipcMain.handle('settings:get', () => {
+    const s = readData('settings')
+    // Always reflect the real system state
+    if (app.isPackaged) {
+      s.openAtLogin = app.getLoginItemSettings().openAtLogin
+    }
+    return s
+  })
 
   ipcMain.handle('settings:set', (_, updates) => {
     const current = readData('settings')
-    const allowed = ['workDuration', 'shortBreakDuration', 'longBreakDuration', 'longBreakInterval', 'autoStartBreak', 'autoStartWork', 'soundEnabled', 'circleSize', 'dailyGoal', 'miniSize', 'miniOpacity', 'language']
+    const allowed = ['workDuration', 'shortBreakDuration', 'longBreakDuration', 'longBreakInterval', 'autoStartBreak', 'autoStartWork', 'soundEnabled', 'circleSize', 'dailyGoal', 'miniSize', 'miniOpacity', 'language', 'openAtLogin']
     const merged = { ...current }
     allowed.forEach((key) => {
       if (key in updates) merged[key] = updates[key]
@@ -21,6 +28,12 @@ export function registerSettingsIpc(onSettingsApplied) {
     if ('miniSize' in merged) merged.miniSize = Math.max(120, Math.min(400, Number(merged.miniSize)))
     if ('miniOpacity' in merged) merged.miniOpacity = Math.max(0.1, Math.min(1.0, Number(merged.miniOpacity)))
     if ('language' in updates) merged.language = ['zh', 'en'].includes(String(updates.language)) ? String(updates.language) : 'zh'
+    if ('openAtLogin' in updates) {
+      merged.openAtLogin = Boolean(updates.openAtLogin)
+      if (app.isPackaged) {
+        app.setLoginItemSettings({ openAtLogin: merged.openAtLogin })
+      }
+    }
     if ('hotkeys' in updates && updates.hotkeys && typeof updates.hotkeys === 'object') {
       merged.hotkeys = {
         toggleTimer: String(updates.hotkeys.toggleTimer || '').slice(0, 60),

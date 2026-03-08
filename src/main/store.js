@@ -21,7 +21,8 @@ const DEFAULTS = {
       toggleTimer: 'Ctrl+Alt+Space',
       skipPhase: 'Ctrl+Alt+S'
     },
-    language: 'zh'
+    language: 'zh',
+    openAtLogin: false
   },
   tasks: [],
   records: []
